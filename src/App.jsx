@@ -1,8 +1,9 @@
 import { IconButton } from "@chakra-ui/button";
 import { Flex, Heading, Stack } from "@chakra-ui/layout";
 import { Box, Button, Textarea, Text, useColorMode, useColorModeValue } from '@chakra-ui/react';
+import axios from "axios";
 import React, { useState } from "react";
-import { FaHeart, FaMoon, FaSun } from "react-icons/fa";
+import { FaMoon, FaSun } from "react-icons/fa";
 
 export const ColorModeSwitcher = (props) => {
   const { toggleColorMode } = useColorMode();
@@ -52,12 +53,12 @@ function App() {
 
   const onSearch = async () => {
     // Call Base API
+    const ans = await axios.post('http://127.0.0.1:3000/', { text: query })
     // Then Print Suggested Topic
-    setTopic('Predicted Topic: ')
+    setTopic(`Predicted Topic: ${ans.data.title}`)
     setRows(1);
-    // Call Scholar API
     setStackDir('row');
-    setData([]);
+    setData(ans.data.data);
   }
   return (
     <Box w="100vw" h="100vh" px="8px" >
@@ -75,6 +76,8 @@ function App() {
             }}
             onClick={() => {
               setRows(10);
+              setTopic('')
+              setData([])
               setStackDir('column');
             }}
             fontSize={{ base: "24px", lg: "36px" }}
@@ -91,8 +94,8 @@ function App() {
         direction={'column'}
         sx={{
           height: 'calc(100vh - 90px)',
-          width: '60%',
-          marginX: data.length ? '0px' : 'auto'
+          width: data.length ? '50%' : '60%',
+          marginX: data.length ? '10%' : 'auto'
         }}
         justify={data.length ? 'start' : 'center'}
       >
@@ -103,16 +106,16 @@ function App() {
             rows={rows}
             placeholder={"Type your Abstract here..."}
             onChange={(e) => setQuery(e.target.value)}
+            sx={{ borderColor: 'white.700' }}
           />
           <Button onClick={onSearch}>Search</Button>
         </Stack>
         <Box h={4} />
         <Stack direction={'column'} spacing={2}>
-          <Text fontSize={"20px"}>{topic}</Text>
-          {data.map(item => <Card title={item.title} description={item.description} />)}
+          <Text fontSize={"20px"} padding={4}>{topic}</Text>
+          {data.map(item => <Card title={item.title} description={item.snippet} />)}
         </Stack>
       </Flex>
-      <Flex justify={'center'}>Made with &nbsp; <FaHeart /> &nbsp; by Jugal Bhatt, Vinayak Gupta, Aditya Keshan, Dev Sharma </Flex>
     </Box >
   )
 }
